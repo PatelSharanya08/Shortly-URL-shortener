@@ -1,4 +1,5 @@
 import { urlRepository } from '../repositories/url.repository';
+import { getCachedUrl, setCachedUrl, setCachedNotFound } from '../repositories/url.cache';
 import { encodeBase62 } from '../utils/base62';
 import { env } from '../config/env';
 import { CreateShortUrlInput, ShortUrlResponse } from '../types/url.types';
@@ -29,16 +30,37 @@ export class UrlService {
     };
   }
 
-  async resolveShortCode(shortCode: string): Promise<string | null> {
-    const record = await urlRepository.findByShortCode(shortCode);
+  async resolveShortCode(shortCode: string): Promise<{ longUrl: string; source: 'cache' | 'db' } | null> {
+    // 1. Check the cache first.
+    const cached = await getCachedUrl(shortCode);
 
-    if (!record) return null;
-
-    if (record.expires_at && record.expires_at < new Date()) {
-      return null; // treat expired links as not found
+    if (cached.status === 'hit') {
+      console.log(`[CACHE HIT] ${shortCode}`);
+      return { longUrl: cached.longUrl, source: 'cache' };
+    }
+    if (cached.status === 'miss-not-found') {
+      console.log(`[CACHE HIT - negative] ${shortCode}`);
+      return null; // we've already confirmed this code doesn't exist recently
     }
 
-    return record.long_url;
+    // 2. Cache miss — fall back to Postgres, the source of truth.
+    console.log(`[CACHE MISS] ${shortCode} -> querying Postgres`);
+    const record = await urlRepository.findByShortCode(shortCode);
+
+    if (!record) {
+      await setCachedNotFound(shortCode);
+      return null;
+    }
+
+    if (record.expires_at && record.expires_at < new Date()) {
+      await setCachedNotFound(shortCode); // treat expired links as not found
+      return null;
+    }
+
+    // 3. Populate the cache so the next request is a hit.
+    await setCachedUrl(shortCode, record.long_url);
+
+    return { longUrl: record.long_url, source: 'db' };
   }
 }
 

@@ -13,13 +13,14 @@ export async function createShortUrl(req: Request, res: Response, next: NextFunc
 export async function redirectShortUrl(req: Request, res: Response, next: NextFunction) {
   try {
     const shortCode = String(req.params.shortCode);
-    const longUrl = await urlService.resolveShortCode(shortCode);
-
-    if (!longUrl) {
+    const resolved = await urlService.resolveShortCode(shortCode);
+ 
+    if (!resolved) {
       return res.status(404).json({ error: 'NotFound', message: 'Short URL not found or expired' });
     }
-
-    res.redirect(302, longUrl);
+ 
+    res.setHeader('X-Cache', resolved.source === 'cache' ? 'HIT' : 'MISS');
+    res.redirect(302, resolved.longUrl);
   } catch (err) {
     next(err);
   }

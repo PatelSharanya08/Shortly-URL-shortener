@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import { z, ZodSchema } from 'zod';
+import { z, ZodType } from 'zod';
 
 export const createShortUrlSchema = z.object({
-  longUrl: z.string().url({ message: 'longUrl must be a valid URL' }),
-  expiresAt: z.string().datetime().optional(),
+  longUrl: z.url({ message: 'longUrl must be a valid URL' }),
+  expiresAt: z.iso.datetime().optional(),
 });
 
 /**
@@ -11,7 +11,7 @@ export const createShortUrlSchema = z.object({
  * validates req.body against it, short-circuiting with a 400 on failure.
  * This keeps validation logic out of controllers entirely.
  */
-export function validateBody(schema: ZodSchema) {
+export function validateBody(schema: ZodType) {
   return (req: Request, res: Response, next: NextFunction) => {
     const result = schema.safeParse(req.body);
 
