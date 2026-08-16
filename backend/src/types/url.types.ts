@@ -11,6 +11,7 @@ export interface UrlRecord {
 export interface CreateShortUrlInput {
   longUrl: string;
   expiresAt?: string;
+  idempotencyKey?: string;
 }
 
 export interface ShortUrlResponse {

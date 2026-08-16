@@ -19,6 +19,7 @@ export class UrlService {
       shortCode,
       longUrl: input.longUrl,
       expiresAt: input.expiresAt ?? null,
+      idempotencyKey: input.idempotencyKey ?? null,
     });
 
     return {
