@@ -25,4 +25,10 @@ export const env = {
     host: required('REDIS_HOST'),
     port: parseInt(required('REDIS_PORT'), 10),
   },
+  rateLimit: {
+    shortenCapacity: parseInt(required('RATE_LIMIT_SHORTEN_CAPACITY'), 10),
+    shortenRefillPerSecond: parseInt(required('RATE_LIMIT_SHORTEN_REFILL'), 10),
+    redirectCapacity: parseInt(required('RATE_LIMIT_REDIRECT_CAPACITY'), 10),
+    redirectRefillPerSecond: parseInt(required('RATE_LIMIT_REDIRECT_REFILL'), 10),
+  },
 };
