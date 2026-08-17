@@ -31,4 +31,8 @@ export const env = {
     redirectCapacity: parseInt(required('RATE_LIMIT_REDIRECT_CAPACITY'), 10),
     redirectRefillPerSecond: parseInt(required('RATE_LIMIT_REDIRECT_REFILL'), 10),
   },
+  // Uniquely identifies this app instance for Snowflake ID generation.
+  // In production this would be derived from the deployment platform
+  // (ECS task ordinal, K8s pod index, etc.) rather than hardcoded.
+  workerId: parseInt(required('WORKER_ID'), 10),
 };

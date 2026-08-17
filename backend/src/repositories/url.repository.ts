@@ -2,20 +2,8 @@ import { pool } from '../config/db';
 import { UrlRecord } from '../types/url.types';
 
 export class UrlRepository {
-  /**
-   * Pulls the next value from the Postgres sequence. We fetch this
-   * BEFORE inserting because we need the numeric id to base62-encode
-   * into the short_code before we can write the row.
-   */
-  async getNextId(): Promise<number> {
-    const result = await pool.query<{ nextval: string }>(
-      "SELECT nextval('url_id_seq')"
-    );
-    return parseInt(result.rows[0].nextval, 10);
-  }
-
   async create(params: {
-    id: number;
+    id: bigint;
     shortCode: string;
     longUrl: string;
     expiresAt: string | null;
@@ -26,7 +14,7 @@ export class UrlRepository {
         `INSERT INTO urls (id, short_code, long_url, expires_at, idempotency_key)
          VALUES ($1, $2, $3, $4, $5)
          RETURNING *`,
-        [params.id, params.shortCode, params.longUrl, params.expiresAt, params.idempotencyKey ?? null]
+        [params.id.toString(), params.shortCode, params.longUrl, params.expiresAt, params.idempotencyKey ?? null]
       );
       return result.rows[0];
     } catch (err) {

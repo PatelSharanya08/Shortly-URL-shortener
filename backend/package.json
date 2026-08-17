@@ -1,12 +1,16 @@
 {
   "name": "url-shortener",
   "version": "1.0.0",
-  "description": "A distributed URL shortening system",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
+    "benchmark:cache": "bash scripts/benchmark-cache.sh",
+    "benchmark:throughput": "node scripts/benchmark-throughput.js",
+    "benchmark:ratelimit": "node scripts/benchmark-ratelimit.js",
+    "verify:snowflake": "ts-node scripts/verify-snowflake.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -23,6 +27,7 @@
     "@types/express": "^5.0.6",
     "@types/node": "^26.2.0",
     "@types/pg": "^8.21.0",
+    "autocannon": "^8.0.0",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"

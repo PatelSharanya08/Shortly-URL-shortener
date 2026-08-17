@@ -1,14 +1,19 @@
 import { urlRepository } from '../repositories/url.repository';
 import { getCachedUrl, setCachedUrl, setCachedNotFound } from '../repositories/url.cache';
 import { encodeBase62 } from '../utils/base62';
+import { SnowflakeGenerator } from '../utils/snowflake';
 import { env } from '../config/env';
 import { CreateShortUrlInput, ShortUrlResponse } from '../types/url.types';
 
+// One generator per running process, seeded with this instance's worker ID.
+const idGenerator = new SnowflakeGenerator(env.workerId);
+
 export class UrlService {
   async createShortUrl(input: CreateShortUrlInput): Promise<ShortUrlResponse> {
-    // 1. Get a unique id from the Postgres sequence — this is the
-    //    single source of truth for uniqueness. No collision check needed.
-    const id = await urlRepository.getNextId();
+    // 1. Generate a unique id in-process — no network call, no DB dependency.
+    //    Uniqueness comes from this worker's ID + timestamp + sequence,
+    //    not from asking a central authority "what's the next number?"
+    const id = idGenerator.nextId();
 
     // 2. Deterministically derive the short code from that id.
     const shortCode = encodeBase62(id);
