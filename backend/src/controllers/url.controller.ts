@@ -26,6 +26,21 @@ export async function createShortUrl(req: Request, res: Response, next: NextFunc
   }
 }
 
+export async function getStats(req: Request, res: Response, next: NextFunction) {
+  try {
+    const shortCode = String(req.params.shortCode);
+    const stats = await urlService.getStats(shortCode);
+
+    if (!stats) {
+      return res.status(404).json({ error: 'NotFound', message: 'Short URL not found' });
+    }
+
+    res.status(200).json(stats);
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function redirectShortUrl(req: Request, res: Response, next: NextFunction) {
   try {
     const shortCode = String(req.params.shortCode);

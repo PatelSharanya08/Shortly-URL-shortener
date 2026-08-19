@@ -35,4 +35,9 @@ export const env = {
   // In production this would be derived from the deployment platform
   // (ECS task ordinal, K8s pod index, etc.) rather than hardcoded.
   workerId: parseInt(required('WORKER_ID'), 10),
+  kafka: {
+    brokers: required('KAFKA_BROKERS').split(','),
+    clientId: required('KAFKA_CLIENT_ID'),
+    clickTopic: required('KAFKA_CLICK_TOPIC'),
+  },
 };

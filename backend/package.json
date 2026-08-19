@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "consumer": "ts-node-dev --respawn --transpile-only src/consumer.ts",
     "build": "tsc",
     "start": "node dist/server.js",
     "benchmark:cache": "bash scripts/benchmark-cache.sh",
@@ -20,6 +21,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "ioredis": "^6.0.0",
+    "kafkajs": "^2.2.4",
     "pg": "^8.23.0",
     "zod": "^4.4.3"
   },

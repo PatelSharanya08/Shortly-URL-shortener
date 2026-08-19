@@ -1,7 +1,9 @@
 import { urlRepository } from '../repositories/url.repository';
+import { clickEventRepository } from '../repositories/clickEvent.repository';
 import { getCachedUrl, setCachedUrl, setCachedNotFound } from '../repositories/url.cache';
 import { encodeBase62 } from '../utils/base62';
 import { SnowflakeGenerator } from '../utils/snowflake';
+import { publishClickEvent } from '../config/kafka';
 import { env } from '../config/env';
 import { CreateShortUrlInput, ShortUrlResponse } from '../types/url.types';
 
@@ -42,6 +44,7 @@ export class UrlService {
 
     if (cached.status === 'hit') {
       console.log(`[CACHE HIT] ${shortCode}`);
+      this.recordClick(shortCode);
       return { longUrl: cached.longUrl, source: 'cache' };
     }
     if (cached.status === 'miss-not-found') {
@@ -66,7 +69,35 @@ export class UrlService {
     // 3. Populate the cache so the next request is a hit.
     await setCachedUrl(shortCode, record.long_url);
 
+    this.recordClick(shortCode);
+
     return { longUrl: record.long_url, source: 'db' };
+  }
+
+  async getStats(shortCode: string): Promise<{ shortCode: string; totalClicks: number; createdAt: string } | null> {
+    const record = await urlRepository.findByShortCode(shortCode);
+    if (!record) return null;
+
+    const totalClicks = await clickEventRepository.countForShortCode(shortCode);
+
+    return {
+      shortCode: record.short_code,
+      totalClicks,
+      createdAt: record.created_at.toISOString(),
+    };
+  }
+
+  /**
+   * Fire-and-forget: publishes a click event to Kafka without blocking
+   * the redirect response. Deliberately NOT awaited — analytics must
+   * never slow down or break the actual redirect, which is the real
+   * product. If Kafka is unreachable, we log and move on; a lost click
+   * event is an acceptable trade-off, unlike a lost redirect.
+   */
+  private recordClick(shortCode: string): void {
+    publishClickEvent(shortCode).catch((err) => {
+      console.error(`Failed to publish click event for ${shortCode} (non-fatal):`, (err as Error).message);
+    });
   }
 }
 

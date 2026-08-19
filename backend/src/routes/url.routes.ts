@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createShortUrl, redirectShortUrl } from '../controllers/url.controller';
+import { createShortUrl, redirectShortUrl, getStats } from '../controllers/url.controller';
 import { validateBody, createShortUrlSchema } from '../middleware/validate';
 import { rateLimiter } from '../middleware/rateLimit';
 import { env } from '../config/env';
@@ -23,6 +23,7 @@ const redirectRateLimit = rateLimiter({
 });
 
 router.post('/api/v1/shorten', shortenRateLimit, validateBody(createShortUrlSchema), createShortUrl);
+router.get('/api/v1/urls/:shortCode/stats', getStats);
 router.get('/:shortCode', redirectRateLimit, redirectShortUrl);
 
 export default router;

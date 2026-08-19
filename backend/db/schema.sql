@@ -20,3 +20,14 @@ CREATE INDEX IF NOT EXISTS idx_urls_short_code ON urls (short_code);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_urls_idempotency_key
   ON urls (idempotency_key)
   WHERE idempotency_key IS NOT NULL;
+
+-- Append-only click event log, populated by the Kafka consumer.
+-- Kept as raw events (not a running counter) so we can later query
+-- clicks per day/hour, not just a lifetime total.
+CREATE TABLE IF NOT EXISTS click_events (
+  id BIGSERIAL PRIMARY KEY,
+  short_code VARCHAR(12) NOT NULL,
+  clicked_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_click_events_short_code ON click_events (short_code);
