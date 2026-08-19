@@ -1,10 +1,18 @@
 import express from 'express';
+import cors from 'cors';
 import urlRoutes from './routes/url.routes';
 import { errorHandler } from './middleware/errorHandler';
+import { env } from './config/env';
 
 export function createApp() {
   const app = express();
 
+  app.use(
+    cors({
+      origin: env.corsOrigin,
+      exposedHeaders: ['X-Cache', 'X-RateLimit-Limit', 'X-RateLimit-Remaining', 'Retry-After'],
+    })
+  );
   app.use(express.json());
 
   // Registered before urlRoutes: /:shortCode is a greedy dynamic segment

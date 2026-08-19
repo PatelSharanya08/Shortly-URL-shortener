@@ -14,6 +14,7 @@ export const env = {
   port: parseInt(required('PORT'), 10),
   nodeEnv: required('NODE_ENV'),
   baseUrl: required('BASE_URL'),
+  corsOrigin: required('CORS_ORIGIN'),
   db: {
     host: required('DB_HOST'),
     port: parseInt(required('DB_PORT'), 10),
